@@ -7805,7 +7805,7 @@ static const struct TrainerMon sParty_BrendanRoute110Mudkip[] = {
     .iv = 100,
     .lvl = 22,
     .species = SPECIES_GROVYLE,
-    .moves = {MOVE_ABSORB, MOVE_QUICK_ATTACK, MOVE_FALSE_SWIPE, MOVE_RAZOR_LEAF}
+    .moves = {MOVE_VINE_WHIP, MOVE_QUICK_ATTACK, MOVE_FALSE_SWIPE, MOVE_RAZOR_LEAF}
     }
 };
 // Route 119 Rival 4 w Treecko
@@ -7973,7 +7973,7 @@ static const struct TrainerMon sParty_MayRoute110Mudkip[] = {
     .iv = 100,
     .lvl = 22,
     .species = SPECIES_GROVYLE,
-    .moves = {MOVE_ABSORB, MOVE_QUICK_ATTACK, MOVE_FALSE_SWIPE, MOVE_RAZOR_LEAF}
+    .moves = {MOVE_VINE_WHIP, MOVE_QUICK_ATTACK, MOVE_FALSE_SWIPE, MOVE_RAZOR_LEAF}
     }
 };
 // Route 119 Rival 4 w Treecko
@@ -9001,7 +9001,7 @@ static const struct TrainerMon sParty_BrendanRustboroMudkip[] = {
     .iv = 50,
     .lvl = 15,
     .species = SPECIES_TREECKO,
-    .moves = {MOVE_LEER, MOVE_ABSORB, MOVE_QUICK_ATTACK, MOVE_NONE}
+    .moves = {MOVE_LEER, MOVE_QUICK_ATTACK, MOVE_VINE_WHIP, MOVE_NONE}
     }
 };
 // Route 132 Expert
@@ -9109,7 +9109,7 @@ static const struct TrainerMon sParty_MayRustboroMudkip[] = {
     .iv = 50,
     .lvl = 15,
     .species = SPECIES_TREECKO,
-    .moves = {MOVE_LEER, MOVE_ABSORB, MOVE_QUICK_ATTACK, MOVE_NONE}
+    .moves = {MOVE_LEER, MOVE_QUICK_ATTACK, MOVE_VINE_WHIP, MOVE_NONE}
     }
 };
 // Magma Leader Magma Hideout

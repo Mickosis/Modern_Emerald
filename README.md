@@ -15,7 +15,7 @@
 - **HM Field Move Freedom**: Clear obstacles without HMs taking up your Pokémon's combat moveslots—having the Gym Badge and HM in your bag is all you need!
 - **Overworld Speed Up (Audio Decoupled)**: Accelerate overworld traversal without distorted, high-pitched audio! Tap **L** in the overworld to cycle between **1x (Standard)**, **2x (Fast)**, and **4x (Turbo)** speeds. While moving at high speeds, hold **R** to temporarily drop back to 1x normal speed for precise alignment with doors and NPCs. Route music, Pokémon cries, and sound effects remain at 100% authentic pitch and tempo.
 - **Persistent Flash**: Cave illumination from Flash stays lit across map transitions and room exits.
-- **Grovyle & Sceptile Dragon Buffs**: Grovyle and Sceptile are both **Grass/Dragon** dual-types! The line gains key Dragon STAB moves (*Dragon Breath* upon evolving at Lv. 16, *Dragon Claw*), early Grass STAB (*Vine Whip* at Lv. 10), and *SolarBeam*, while keeping all of Emerald Legacy's authentic balancing intact.
+- **Starter Learnset Symmetry & Sceptile Dragon Buffs**: Treecko, Grovyle, and Sceptile receive early learnset pacing aligned symmetrically with Torchic and Mudkip (*Quick Attack* at Lv. 6, *Vine Whip* at Lv. 9). Grovyle and Sceptile are also **Grass/Dragon** dual-types gaining key Dragon STAB moves (*Dragon Breath* upon evolving at Lv. 16, *Dragon Claw*) and *SolarBeam*, preserving authentic battle balance while establishing early-game starter parity.
 
 ---
 
