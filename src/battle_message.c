@@ -432,7 +432,7 @@ static const u8 sText_Accuracy[] = _("accuracy");
 static const u8 sText_Evasiveness[] = _("evasiveness");
 static const u8 sText_AttackBoostedByAbility[] = _("{B_ATK_NAME_WITH_PREFIX}'s {B_CURRENT_MOVE}\nwas boosted by {B_ATK_ABILITY}!"); // Added new Ability Effect to provide text for Overgrow, Blaze, Torrent and Swarm
 static const u8 sText_MagmaArmorActivated[] = _("{B_DEF_NAME_WITH_PREFIX}'s {B_DEF_ABILITY} reduced\nthe damage from {B_CURRENT_MOVE}!"); // Added new Battle result message to provide text for Magma Armor activation
-static const u8 sText_PkmnGainedEXPAll[] = _("POKéMON in party each gained\n{B_BUFF3} EXP. Points.\p");
+static const u8 sText_PkmnGainedEXPAll[] = _("The rest of your party also\ngained EXP. Points!\p");
 
 const u8 * const gStatNamesTable[NUM_BATTLE_STATS] =
 {

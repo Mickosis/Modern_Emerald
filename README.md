@@ -11,7 +11,7 @@
 ## 🎮 Key Features
 
 ### 🎒 Quality of Life & Field Mechanics
-- **EXP. All**: Key Item obtained from Mr. Stone at Devon Corp after delivering Steven's letter. Can be toggled On/Off in your Key Items pocket or registered to `SELECT` for party-wide EV and EXP sharing.
+- **Modern EXP. Share (Gen VII+ Formula)**: The EXP. ALL Key Item (obtained from Mr. Stone at Devon Corp) enables a **modern scaled EXP formula** with rubber-band level scaling. Active battlers receive **100%** EXP, benched party members receive **50%**, and fainted Pokémon receive **0 EXP and 0 EVs**. Underleveled Pokémon gain exponentially more EXP while overleveled Pokémon gain near-zero, keeping your team naturally balanced. Toggle On/Off via the Key Items pocket or register to `SELECT`.
 - **HM Field Move Freedom**: Clear obstacles without HMs taking up your Pokémon's combat moveslots—having the Gym Badge and HM in your bag is all you need!
 - **Persistent Flash**: Cave illumination from Flash stays lit across map transitions and room exits.
 - **Sceptile Type Change**: Sceptile is now a **Grass/Dragon** dual-type, gaining Dragon STAB with its signature Dragon Claw while keeping its stats, learnset, and everything else fully authentic.
