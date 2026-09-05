@@ -13,6 +13,7 @@
 ### 🎒 Quality of Life & Field Mechanics
 - **Modern EXP. Share (Gen VII+ Formula)**: The EXP. ALL Key Item (obtained from Mr. Stone at Devon Corp) enables a **modern scaled EXP formula** with rubber-band level scaling. Active battlers receive **100%** EXP, benched party members receive **50%**, and fainted Pokémon receive **0 EXP and 0 EVs**. Underleveled Pokémon gain exponentially more EXP while overleveled Pokémon gain near-zero, keeping your team naturally balanced. Toggle On/Off via the Key Items pocket or register to `SELECT`.
 - **HM Field Move Freedom**: Clear obstacles without HMs taking up your Pokémon's combat moveslots—having the Gym Badge and HM in your bag is all you need!
+- **Overworld Speed Up (Audio Decoupled)**: Accelerate overworld traversal without distorted, high-pitched audio! Tap **L** in the overworld to cycle between **1x (Standard)**, **2x (Fast)**, and **4x (Turbo)** speeds. While moving at high speeds, hold **R** to temporarily drop back to 1x normal speed for precise alignment with doors and NPCs. Route music, Pokémon cries, and sound effects remain at 100% authentic pitch and tempo.
 - **Persistent Flash**: Cave illumination from Flash stays lit across map transitions and room exits.
 - **Grovyle & Sceptile Dragon Buffs**: Grovyle and Sceptile are both **Grass/Dragon** dual-types! The line gains key Dragon STAB moves (*Dragon Breath* upon evolving at Lv. 16, *Dragon Claw*), early Grass STAB (*Vine Whip* at Lv. 10), and *SolarBeam*, while keeping all of Emerald Legacy's authentic balancing intact.
 
@@ -66,6 +67,6 @@ python3 tools/make_bps.py vanilla_emerald.gba pokeemerald.gba Modern_Emerald.bps
 ## 🙏 Credits & Acknowledgements
 
 - **Original Emerald Legacy Team**: [TheSmithPlays](https://www.youtube.com/@smithplayspokemon), [cRz-Shadows](https://github.com/cRz-Shadows), Weebra, Aerogod, Disq, Isona, ZuperZACH, Karlos, Regi.
-- **Overworld Wild Encounters (OWE)**: [HashtagMarky](https://github.com/HashtagMarky) & [Bivurnum](https://github.com/bivurnum) (PR #8434 / pokeemerald-expansion).
-- **Follower Pokémon & Custom Overworld Sprites**: [Exclsior](https://github.com/Exclsior) (Follower Pokémon engine, dynamic surfing sprites), Voloved, Ghoulslash, ExpoSeed, Lunos, Mkol103, FieryMewtwo, TheXaman, LOuroboros, Jaizu, Buffel Saft, AkimotoBubble, Scyrous.
+- **Overworld Wild Encounters (OWE) & Overworld Speed Up**: [HashtagMarky](https://github.com/HashtagMarky) (Overworld Speedup, Team Aqua's Asset Repo) & [Bivurnum](https://github.com/bivurnum) (OWE PR #8434 / pokeemerald-expansion).
+- **Follower Pokémon & Custom Overworld Sprites**: [Exclsior](https://github.com/Exclsior) (Follower Pokémon engine, dynamic surfing sprites, speedup controls), Voloved, Ghoulslash, ExpoSeed, Lunos, Mkol103, FieryMewtwo, TheXaman, LOuroboros, Jaizu, Buffel Saft, AkimotoBubble, Scyrous.
 - **Pret Community**: [pokeemerald](https://github.com/pret/pokeemerald) disassembly project and tooling.
