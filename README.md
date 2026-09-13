@@ -37,6 +37,15 @@ Wild Pokémon visibly roam across the tall grass, caves, and waters of Hoenn!
 
 ---
 
+### ⚡ Fast Battles
+Battles move roughly twice as fast, with no change to Gen 3 balance, damage, or move effects.
+- **Faster Send-Outs**: The Poké Ball throw, mon emerge, species intro animation, and healthbox slide-in are all shortened.
+- **Faster Move Animations**: Battle-script and animation-script waits are shortened across the board.
+- **Faster HP Bar**: The HP bar now drains in a fixed amount of time instead of one frame per HP point lost, so big hits no longer stall the battle for seconds.
+- All of the above is tunable in `include/config/battle_speed.h`, and every value can be restored to its documented vanilla number to return to stock pacing.
+
+---
+
 ## 🕹️ Download & How to Patch
 
 1. Download the latest **`Modern_Emerald.bps`** patch from the [Releases Page](https://github.com/Mickosis/Modern_Emerald/releases/latest).

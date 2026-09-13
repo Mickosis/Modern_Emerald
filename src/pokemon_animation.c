@@ -52,6 +52,8 @@ struct YellowFlashData
     u8 time;
 };
 
+static void HandleSetAffineData(struct Sprite *sprite, s16 xScale, s16 yScale, u16 rotation);
+static void ResetSpriteAfterAnim(struct Sprite *sprite);
 static void Anim_VerticalSquishBounce(struct Sprite *sprite);
 static void Anim_CircularStretchTwice(struct Sprite *sprite);
 static void Anim_HorizontalVibrate(struct Sprite *sprite);
@@ -899,6 +901,7 @@ u8 GetSpeciesBackAnimSet(u16 species)
 #define tAnimId data[3]
 #define tBattlerId data[4]
 #define tSpeciesId data[5]
+#define tTimer  data[6]
 #define ANIM_SPRITE(taskId)   ((struct Sprite *)((gTasks[taskId].tPtrHi << 16) | ((u16)gTasks[taskId].tPtrLo)))
 
 static void Task_HandleMonAnimation(u8 taskId)
@@ -921,6 +924,19 @@ static void Task_HandleMonAnimation(u8 taskId)
 
         gTasks[taskId].tState++;
     }
+#if B_MON_INTRO_ANIM_MAX_FRAMES != 0
+    if (sprite->callback != SpriteCallbackDummy
+     && ++gTasks[taskId].tTimer > B_MON_INTRO_ANIM_MAX_FRAMES)
+    {
+        // Force-finish a long species animation using the same cleanup the
+        // animation functions perform on their own last frame.
+        HandleSetAffineData(sprite, 256, 256, 0);
+        ResetSpriteAfterAnim(sprite);
+        sprite->x2 = 0;
+        sprite->y2 = 0;
+        sprite->callback = SpriteCallbackDummy;
+    }
+#endif
     if (sprite->callback == SpriteCallbackDummy)
     {
         sprite->data[0] = gTasks[taskId].tBattlerId;
@@ -968,6 +984,7 @@ void LaunchAnimationTaskForBackSprite(struct Sprite *sprite, u8 backAnimSet)
 #undef tAnimId
 #undef tBattlerId
 #undef tSpeciesId
+#undef tTimer
 
 void SetSpriteCB_MonAnimDummy(struct Sprite *sprite)
 {

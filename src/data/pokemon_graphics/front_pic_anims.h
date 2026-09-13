@@ -4172,11 +4172,11 @@ static const union AnimCmd sAnim_Relicanth_1[] =
 
 static const union AnimCmd sAnim_Aron_1[] =
 {
-    ANIMCMD_FRAME(0, 10),
-    ANIMCMD_FRAME(1, 12),
-    ANIMCMD_FRAME(0, 10),
-    ANIMCMD_FRAME(1, 12),
-    ANIMCMD_FRAME(0, 5),
+    ANIMCMD_FRAME(0, 33),
+    ANIMCMD_FRAME(1, 44),
+    ANIMCMD_FRAME(0, 33),
+    ANIMCMD_FRAME(1, 33),
+    ANIMCMD_FRAME(0, 11),
     ANIMCMD_END,
 };
 

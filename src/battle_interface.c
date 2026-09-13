@@ -2242,11 +2242,18 @@ s32 MoveBattleBar(u8 battlerId, u8 healthboxSpriteId, u8 whichBar, u8 unused)
 
     if (whichBar == HEALTH_BAR) // health bar
     {
+        // Scale the per-frame step with the size of the hit so the bar always takes
+        // about B_HP_BAR_DRAIN_FRAMES frames, instead of one frame per point of HP.
+        u16 hpStep = abs(gBattleSpritesDataPtr->battleBars[battlerId].receivedValue)
+                   / B_HP_BAR_DRAIN_FRAMES;
+        if (hpStep == 0)
+            hpStep = 1;
+
         currentBarValue = CalcNewBarValue(gBattleSpritesDataPtr->battleBars[battlerId].maxValue,
                     gBattleSpritesDataPtr->battleBars[battlerId].oldValue,
                     gBattleSpritesDataPtr->battleBars[battlerId].receivedValue,
                     &gBattleSpritesDataPtr->battleBars[battlerId].currValue,
-                    B_HEALTHBAR_PIXELS / 8, 1);
+                    B_HEALTHBAR_PIXELS / 8, hpStep);
     }
     else // exp bar
     {
@@ -2255,7 +2262,8 @@ s32 MoveBattleBar(u8 battlerId, u8 healthboxSpriteId, u8 whichBar, u8 unused)
                     gBattleSpritesDataPtr->battleBars[battlerId].maxValue, 8);
         if (expFraction == 0)
             expFraction = 1;
-        expFraction = abs(gBattleSpritesDataPtr->battleBars[battlerId].receivedValue / expFraction);
+        expFraction = abs(gBattleSpritesDataPtr->battleBars[battlerId].receivedValue / expFraction)
+                    * B_EXP_BAR_SPEEDUP;
 
         currentBarValue = CalcNewBarValue(gBattleSpritesDataPtr->battleBars[battlerId].maxValue,
                     gBattleSpritesDataPtr->battleBars[battlerId].oldValue,

@@ -353,6 +353,12 @@ void SpriteCB_WaitForBattlerBallReleaseAnim(struct Sprite *sprite)
     }
     else
     {
+#if B_FRONT_PIC_ANIM_MAX_FRAMES != 0
+        // Some species have very long front pic tables (Aron ran 154 frames).
+        // Stop blocking the intro on them; the tail plays out under the menu.
+        if (++sprite->data[3] > B_FRONT_PIC_ANIM_MAX_FRAMES)
+            sprite->callback = SpriteCallbackDummy;
+#endif
         if (gSprites[spriteId].animEnded)
             sprite->callback = SpriteCallbackDummy;
     }
