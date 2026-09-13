@@ -928,10 +928,25 @@ static void Task_HandleMonAnimation(u8 taskId)
     if (sprite->callback != SpriteCallbackDummy
      && ++gTasks[taskId].tTimer > B_MON_INTRO_ANIM_MAX_FRAMES)
     {
-        // Force-finish a long species animation using the same cleanup the
-        // animation functions perform on their own last frame.
-        HandleSetAffineData(sprite, 256, 256, 0);
-        ResetSpriteAfterAnim(sprite);
+        // Force-finish a long species animation. Undo everything an animation
+        // could have left behind, mirroring what each family does on its own
+        // last frame.
+
+        // Palette-blend family (Glow*, Flash*, ShakeGlow*): coefficient 0 restores
+        // the unfaded palette; the colour argument is ignored at 0.
+        BlendPalette(OBJ_PLTT_ID(sprite->oam.paletteNum), 16, 0, RGB_BLACK);
+
+        // Flicker family toggles visibility.
+        sprite->invisible = FALSE;
+
+        // Affine family only: undo the affine setup HandleStartAffineAnim did.
+        // Non-affine animations never touched this, so leave it alone for them.
+        if (sprite->affineAnims == sMonAffineAnims)
+        {
+            HandleSetAffineData(sprite, 256, 256, 0);
+            ResetSpriteAfterAnim(sprite);
+        }
+
         sprite->x2 = 0;
         sprite->y2 = 0;
         sprite->callback = SpriteCallbackDummy;
