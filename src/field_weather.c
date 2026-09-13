@@ -809,8 +809,16 @@ bool8 IsWeatherNotFadingIn(void)
 
 void UpdateSpritePaletteWithWeather(u8 spritePaletteIndex)
 {
-    u16 paletteIndex = 16 + spritePaletteIndex;
+    u16 paletteIndex;
     u16 i;
+
+    // LoadSpritePalette returns 0xFF when no sprite palette slot is free. Using
+    // that as an index here would write far past the end of gPlttBufferFaded
+    // and corrupt EWRAM, so reject anything outside the 16 sprite palettes.
+    if (spritePaletteIndex >= 16)
+        return;
+
+    paletteIndex = 16 + spritePaletteIndex;
 
     switch (gWeatherPtr->palProcessingState)
     {

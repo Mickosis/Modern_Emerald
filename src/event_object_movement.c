@@ -2039,6 +2039,12 @@ static u8 LoadDynamicFollowerPalette(u16 species, u8 form, bool32 shiny) {
     }
 
     paletteNum = LoadSpritePalette(&spritePalette);
+    // No palette slot was free. Don't pass the sentinel on: it would index past
+    // gPlttBufferFaded in UpdateSpritePaletteWithWeather, and callers assign the
+    // result to the 4-bit oam.paletteNum where 0xFF silently truncates to 15.
+    if (paletteNum >= 16)
+        return 0;
+
     if (gWeatherPtr->currWeather != WEATHER_FOG_HORIZONTAL) // don't want to weather blend in fog
         UpdateSpritePaletteWithWeather(paletteNum);
     return paletteNum;
