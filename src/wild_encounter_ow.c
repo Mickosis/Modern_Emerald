@@ -1130,7 +1130,19 @@ static bool32 CheckCanLoadOWE(u16 speciesId, bool32 isFemale, bool32 isShiny, s3
 static bool32 CheckCanLoadOWE_Palette(u16 speciesId, bool32 isFemale, bool32 isShiny, s32 x, s32 y)
 {
     u32 numFreePalSlots = CountFreePaletteSlots();
-    u32 tag = isShiny ? (speciesId + SPECIES_OVERWORLD_SHINY_TAG) : (speciesId + SPECIES_OVERWORLD_TAG);
+    // GetGraphicsIdForOWE does not carry SPECIES_OVERWORLD_SHINY_TAG and owe->shiny is
+    // only set after the spawn, so the sprite is always created with the normal palette.
+    // That is the tag to check for here.
+    u32 tag = speciesId + SPECIES_OVERWORLD_TAG;
+
+    // A shiny then reloads the shiny palette on its first graphics refresh, so it can
+    // end up holding two slots. Reserve the second one up front.
+    if (isShiny && IndexOfSpritePaletteTag(speciesId + SPECIES_OVERWORLD_SHINY_TAG) == 0xFF)
+    {
+        if (numFreePalSlots == 0)
+            return FALSE;
+        numFreePalSlots--;
+    }
 
     if (numFreePalSlots == 1)
     {
