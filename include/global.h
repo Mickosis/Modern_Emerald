@@ -16,6 +16,7 @@
 #include "constants/easy_chat.h"
 #include "constants/trainer_hill.h"
 #include "config/wild_encounter.h"
+#include "config/battle_speed.h"
 
 // Prevent cross-jump optimization.
 #define BLOCK_CROSS_JUMP asm("");
