@@ -444,7 +444,7 @@ static void Cmd_createvisualtask(void)
 static void Cmd_delay(void)
 {
     sBattleAnimScriptPtr++;
-    sAnimFramesToWait = sBattleAnimScriptPtr[0];
+    sAnimFramesToWait = sBattleAnimScriptPtr[0] / B_ANIM_DELAY_DIV;
     if (sAnimFramesToWait == 0)
         sAnimFramesToWait = -1;
     sBattleAnimScriptPtr++;
@@ -490,7 +490,7 @@ static void Cmd_end(void)
     // Finish the sound effects.
     if (IsSEPlaying())
     {
-        if (++sSoundAnimFramesToWait <= 90) // Wait 90 frames, then halt the sound effect.
+        if (++sSoundAnimFramesToWait <= B_ANIM_SFX_WAIT_FRAMES) // Wait B_ANIM_SFX_WAIT_FRAMES frames, then halt the sound effect.
         {
             sAnimFramesToWait = 1;
             return;
