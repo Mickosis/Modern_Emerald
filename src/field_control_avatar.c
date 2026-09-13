@@ -87,6 +87,7 @@ void FieldClearPlayerInput(struct FieldInput *input)
     input->input_field_1_3 = FALSE;
     input->dpadDirection = 0;
     input->pressedRButton = FALSE;
+    input->pressedLButton = FALSE;
 }
 
 void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
@@ -117,6 +118,9 @@ void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
 
         if (newKeys & R_BUTTON)
             input->pressedRButton = TRUE;
+
+        if (newKeys & L_BUTTON)
+            input->pressedLButton = TRUE;
     }
 
     if (forcedMove == FALSE)
@@ -211,6 +215,20 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
             SetPlayerAvatarTransitionFlags(PLAYER_AVATAR_FLAG_MACH_BIKE);
             PlaySE(SE_BIKE_BELL);
         }
+    }
+
+    if (input->pressedLButton && gSaveBlock2Ptr->optionsButtonMode != OPTIONS_BUTTON_MODE_L_EQUALS_A)
+    {
+        u8 speed = VarGet(VAR_OVERWORLD_SPEEDUP);
+        if (speed == OPTIONS_OVERWORLD_SPEED_1X)
+            speed = OPTIONS_OVERWORLD_SPEED_2X;
+        else if (speed == OPTIONS_OVERWORLD_SPEED_2X)
+            speed = OPTIONS_OVERWORLD_SPEED_4X;
+        else
+            speed = OPTIONS_OVERWORLD_SPEED_1X;
+
+        *GetVarPointer(VAR_OVERWORLD_SPEEDUP) = speed;
+        PlaySE(SE_SELECT);
     }
 
     return FALSE;
