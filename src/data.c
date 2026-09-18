@@ -144,7 +144,7 @@ static const union AffineAnimCmd sAffineAnim_Battler_Flipped[] =
 static const union AffineAnimCmd sAffineAnim_Battler_Emerge[] =
 {
     AFFINEANIMCMD_FRAME(0x28, 0x28, 0, 0),
-    AFFINEANIMCMD_FRAME(B_EMERGE_SCALE_STEP, B_EMERGE_SCALE_STEP, 0, B_EMERGE_FRAMES),
+    AFFINEANIMCMD_FRAME(0x12, 0x12, 0, 12),
     AFFINEANIMCMD_END,
 };
 

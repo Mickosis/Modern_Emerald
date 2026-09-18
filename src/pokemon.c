@@ -6889,9 +6889,7 @@ void DoMonFrontSpriteAnimation(struct Sprite *sprite, u16 species, bool8 noCry, 
             u8 taskId = CreateTask(Task_AnimateAfterDelay, 0);
             STORE_PTR_IN_TASK(sprite, taskId, 0);
             gTasks[taskId].sAnimId = sMonFrontAnimIdsTable[species - 1];
-            gTasks[taskId].sAnimDelay = sMonAnimationDelayTable[species - 1] / B_MON_INTRO_ANIM_DELAY_DIV;
-            if (gTasks[taskId].sAnimDelay == 0)
-                gTasks[taskId].sAnimDelay = 1;
+            gTasks[taskId].sAnimDelay = sMonAnimationDelayTable[species - 1];
         }
         else
         {
