@@ -195,6 +195,8 @@ static void CreateLevitateMovementTask(struct ObjectEvent *);
 static void DestroyLevitateMovementTask(u8);
 static bool8 GetFollowerInfo(u16 *species, u8 *form, u8 *shiny);
 static u8 LoadDynamicFollowerPalette(u16 species, u8 form, bool32 shiny);
+static u8 LoadSpeciesPaletteWithFallback(u16 species, u8 form, bool32 shiny);
+static void ApplyDynamicPalette(struct Sprite *sprite, u8 paletteNum);
 static const struct ObjectEventGraphicsInfo *SpeciesToGraphicsInfo(u16 species, u8 form);
 static bool8 NpcTakeStep(struct Sprite *);
 static bool8 IsElevationMismatchAt(u8, s16, s16);
@@ -1710,7 +1712,11 @@ static u8 TrySetupObjectEventSprite(const struct ObjectEventTemplate *objectEven
     spriteTemplate->tileTag = LoadSheetGraphicsInfo(graphicsInfo, objectEvent->graphicsId, NULL);
     #endif
 
-    if (objectEvent->graphicsId >= OBJ_EVENT_GFX_MON_BASE + SPECIES_OVERWORLD_SHINY_TAG)
+    // Test the species field only. graphicsId packs form in the high bits, and form bit 0
+    // alone (1 << 11 = 2048) already exceeds the tag threshold (512 + 1500 = 2012), so
+    // comparing the whole packed value made any stray form bit subtract 1500 out of the
+    // species field and silently corrupt it.
+    if ((objectEvent->graphicsId & OBJ_EVENT_GFX_SPECIES_MASK) >= OBJ_EVENT_GFX_MON_BASE + SPECIES_OVERWORLD_SHINY_TAG)
     {
         objectEvent->shiny = TRUE;
         objectEvent->graphicsId -= SPECIES_OVERWORLD_SHINY_TAG;
@@ -1726,7 +1732,7 @@ static u8 TrySetupObjectEventSprite(const struct ObjectEventTemplate *objectEven
     sprite = &gSprites[spriteId];
     // Use palette from species palette table
     if (spriteTemplate->paletteTag == OBJ_EVENT_PAL_TAG_DYNAMIC) {
-        sprite->oam.paletteNum = LoadDynamicFollowerPalette(OW_SPECIES(objectEvent), OW_FORM(objectEvent), objectEvent->shiny);
+        ApplyDynamicPalette(sprite, LoadSpeciesPaletteWithFallback(OW_SPECIES(objectEvent), OW_FORM(objectEvent), objectEvent->shiny));
     }
     if (OW_GFX_COMPRESS && sprite->usingSheet)
         sprite->sheetSpan = GetSpanPerImage(sprite->oam.shape, sprite->oam.size);
@@ -1887,7 +1893,10 @@ u8 CreateObjectGraphicsSprite(u16 graphicsId, void (*callback)(struct Sprite *),
         // Use shininess info from follower object
         // in future this should be passed in
         paletteNum = LoadDynamicFollowerPaletteFromGraphicsId(graphicsId, obj ? obj->shiny : FALSE, spriteTemplate);
-        spriteTemplate->paletteTag = GetSpritePaletteTagByPaletteNum(paletteNum);
+        // 0xFF means no slot was free; keep the tag the loader already wrote to the
+        // template rather than indexing the tag table out of bounds.
+        if (paletteNum < 16)
+            spriteTemplate->paletteTag = GetSpritePaletteTagByPaletteNum(paletteNum);
     } else if (spriteTemplate->paletteTag != TAG_NONE)
         LoadObjectEventPalette(spriteTemplate->paletteTag);
 
@@ -2039,15 +2048,40 @@ static u8 LoadDynamicFollowerPalette(u16 species, u8 form, bool32 shiny) {
     }
 
     paletteNum = LoadSpritePalette(&spritePalette);
-    // No palette slot was free. Don't pass the sentinel on: it would index past
-    // gPlttBufferFaded in UpdateSpritePaletteWithWeather, and callers assign the
-    // result to the 4-bit oam.paletteNum where 0xFF silently truncates to 15.
+    // No palette slot was free. Report the failure rather than picking a slot: passing the
+    // sentinel on would index past gPlttBufferFaded in UpdateSpritePaletteWithWeather, but
+    // falling back to slot 0 is no better - in the field that slot is PALTAG_WEATHER (the
+    // fog palette), so the sprite renders washed out and later frees the weather system's
+    // own palette when it despawns. Callers must keep the palette they already have.
     if (paletteNum >= 16)
-        return 0;
+        return 0xFF;
 
     if (gWeatherPtr->currWeather != WEATHER_FOG_HORIZONTAL) // don't want to weather blend in fog
         UpdateSpritePaletteWithWeather(paletteNum);
     return paletteNum;
+}
+
+// Load a species palette, falling back to the non-shiny one when the shiny palette will not
+// fit. This only changes what is displayed, never the object's actual shininess, so a shiny
+// under palette pressure shows normal colours instead of a garbage palette. Returns 0xFF if
+// neither could be loaded.
+static u8 LoadSpeciesPaletteWithFallback(u16 species, u8 form, bool32 shiny)
+{
+    u8 paletteNum = LoadDynamicFollowerPalette(species, form, shiny);
+
+    if (paletteNum >= 16 && shiny)
+        paletteNum = LoadDynamicFollowerPalette(species, form, FALSE);
+
+    return paletteNum;
+}
+
+// Apply a palette from the loaders above. They return 0xFF when no palette slot was free; in
+// that case keep the palette the sprite already has rather than truncating 0xFF into the
+// 4-bit oam.paletteNum field.
+static void ApplyDynamicPalette(struct Sprite *sprite, u8 paletteNum)
+{
+    if (paletteNum < 16)
+        sprite->oam.paletteNum = paletteNum;
 }
 
 // Set graphics & sprite for a follower object event by species & shininess.
@@ -2063,7 +2097,7 @@ static void FollowerSetGraphics(struct ObjectEvent *objEvent, u16 species, u8 fo
         sprite->inUse = FALSE;
         FieldEffectFreePaletteIfUnused(sprite->oam.paletteNum);
         sprite->inUse = TRUE;
-        sprite->oam.paletteNum = LoadDynamicFollowerPalette(species, form, shiny);
+        ApplyDynamicPalette(sprite, LoadSpeciesPaletteWithFallback(species, form, shiny));
     } else if (gWeatherPtr->currWeather != WEATHER_FOG_HORIZONTAL) // don't want to weather blend in fog
         UpdateSpritePaletteWithWeather(gSprites[objEvent->spriteId].oam.paletteNum);
 }
@@ -2102,12 +2136,39 @@ static void RefreshFollowerGraphics(struct ObjectEvent *objEvent) {
         sprite->inUse = FALSE;
         FieldEffectFreePaletteIfUnused(sprite->oam.paletteNum);
         sprite->inUse = TRUE;
-        sprite->oam.paletteNum = LoadDynamicFollowerPalette(species, form, shiny);
+        ApplyDynamicPalette(sprite, LoadSpeciesPaletteWithFallback(species, form, shiny));
     } else if (i != 0xFF) {
         UpdateSpritePalette(&sObjectEventSpritePalettes[i], sprite);
         if (gWeatherPtr->currWeather != WEATHER_FOG_HORIZONTAL) // don't want to weather blend in fog
           UpdateSpritePaletteWithWeather(sprite->oam.paletteNum);
     }
+}
+
+// Reload an object event's species palette to match its current shiny flag.
+// The sprite is created by SpawnSpecialObjectEvent before the spawner can set
+// objectEvent->shiny, so anything that decides shininess after the spawn (such
+// as an overworld wild encounter) must call this or it keeps the non-shiny
+// palette it was created with.
+void ObjectEventRefreshShinyPalette(struct ObjectEvent *objectEvent)
+{
+    const struct ObjectEventGraphicsInfo *graphicsInfo;
+    struct Sprite *sprite;
+
+    if (!objectEvent->active || objectEvent->spriteId >= MAX_SPRITES)
+        return;
+
+    graphicsInfo = GetObjectEventGraphicsInfo(objectEvent->graphicsId);
+    if (graphicsInfo->paletteTag != OBJ_EVENT_PAL_TAG_DYNAMIC)
+        return;
+
+    // Free the old palette before loading the new one so that a mon needing a
+    // different palette than it spawned with does not hold two slots at once - the
+    // slot it just released is usually the one the new palette goes into.
+    sprite = &gSprites[objectEvent->spriteId];
+    sprite->inUse = FALSE;
+    FieldEffectFreePaletteIfUnused(sprite->oam.paletteNum);
+    sprite->inUse = TRUE;
+    ApplyDynamicPalette(sprite, LoadSpeciesPaletteWithFallback(OW_SPECIES(objectEvent), OW_FORM(objectEvent), objectEvent->shiny));
 }
 
 // Like CastformDataTypeChange, but for overworld weather
@@ -2639,7 +2700,7 @@ static void SpawnObjectEventOnReturnToField(u8 objectEventId, s16 x, s16 y)
         sprite = &gSprites[i];
         // Use palette from species palette table
         if (spriteTemplate.paletteTag == OBJ_EVENT_PAL_TAG_DYNAMIC)
-            sprite->oam.paletteNum = LoadDynamicFollowerPalette(OW_SPECIES(objectEvent), OW_FORM(objectEvent), objectEvent->shiny);
+            ApplyDynamicPalette(sprite, LoadSpeciesPaletteWithFallback(OW_SPECIES(objectEvent), OW_FORM(objectEvent), objectEvent->shiny));
         if (OW_GFX_COMPRESS && sprite->usingSheet)
             sprite->sheetSpan = GetSpanPerImage(sprite->oam.shape, sprite->oam.size);
         GetMapCoordsFromSpritePos(x + objectEvent->currentCoords.x, y + objectEvent->currentCoords.y, &sprite->x, &sprite->y);

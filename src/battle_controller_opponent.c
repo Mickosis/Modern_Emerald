@@ -278,7 +278,7 @@ static void Intro_WaitForShinyAnimAndHealthbox(void)
         else
             return;
 
-        gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].introEndDelay = B_INTRO_END_DELAY;
+        gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].introEndDelay = 3;
         gBattlerControllerFuncs[gActiveBattler] = Intro_DelayAndEnd;
     }
 }
@@ -321,10 +321,7 @@ static void Intro_TryShinyAnimShowHealthbox(void)
     if (!gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].waitForCry
         && gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].healthboxSlideInStarted
         && !gBattleSpritesDataPtr->healthBoxesData[BATTLE_PARTNER(gActiveBattler)].waitForCry
-#if B_WAIT_FOR_FULL_CRY == TRUE
-        && !IsCryPlayingOrClearCrySongs()
-#endif
-        )
+        && !IsCryPlayingOrClearCrySongs())
     {
         if (!gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].bgmRestored)
         {
@@ -463,11 +460,7 @@ static void SwitchIn_ShowSubstitute(void)
 
 static void SwitchIn_HandleSoundAndEnd(void)
 {
-    if (!gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].specialAnimActive
-#if B_WAIT_FOR_FULL_CRY == TRUE
-        && !IsCryPlayingOrClearCrySongs()
-#endif
-        )
+    if (!gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].specialAnimActive && !IsCryPlayingOrClearCrySongs())
     {
         if (gSprites[gBattlerSpriteIds[gActiveBattler]].callback == SpriteCallbackDummy
          || gSprites[gBattlerSpriteIds[gActiveBattler]].callback == SpriteCallbackDummy_2)
@@ -1869,7 +1862,7 @@ static void OpponentHandleIntroTrainerBallThrow(void)
 
     SetSpritePrimaryCoordsFromSecondaryCoords(&gSprites[gBattlerSpriteIds[gActiveBattler]]);
 
-    gSprites[gBattlerSpriteIds[gActiveBattler]].data[0] = B_SENDOUT_OPPONENT_TRAINER_SLIDE;
+    gSprites[gBattlerSpriteIds[gActiveBattler]].data[0] = 35;
     gSprites[gBattlerSpriteIds[gActiveBattler]].data[2] = 280;
     gSprites[gBattlerSpriteIds[gActiveBattler]].data[4] = gSprites[gBattlerSpriteIds[gActiveBattler]].y;
     gSprites[gBattlerSpriteIds[gActiveBattler]].callback = StartAnimLinearTranslation;
@@ -1949,7 +1942,7 @@ static void OpponentHandleDrawPartyStatusSummary(void)
         gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].partyStatusDelayTimer = 0;
 
         if (gBattleBufferA[gActiveBattler][2] != 0)
-            gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].partyStatusDelayTimer = B_PARTY_SUMMARY_DELAY + 1;
+            gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].partyStatusDelayTimer = 93;
 
         gBattlerControllerFuncs[gActiveBattler] = EndDrawPartyStatusSummary;
     }
@@ -1957,7 +1950,7 @@ static void OpponentHandleDrawPartyStatusSummary(void)
 
 static void EndDrawPartyStatusSummary(void)
 {
-    if (gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].partyStatusDelayTimer++ > B_PARTY_SUMMARY_DELAY)
+    if (gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].partyStatusDelayTimer++ > 92)
     {
         gBattleSpritesDataPtr->healthBoxesData[gActiveBattler].partyStatusDelayTimer = 0;
         OpponentBufferExecCompleted();

@@ -145,6 +145,7 @@ void SetSpritePosToMapCoords(s16 mapX, s16 mapY, s16 *destX, s16 *destY);
 void CameraObjectReset(void);
 u8 UpdateSpritePaletteByTemplate(const struct SpriteTemplate *, struct Sprite *);
 void ObjectEventSetGraphicsId(struct ObjectEvent *, u16 graphicsId);
+void ObjectEventRefreshShinyPalette(struct ObjectEvent *objectEvent);
 void ObjectEventTurn(struct ObjectEvent *, u8 direction);
 void ObjectEventTurnByLocalIdAndMap(u8 localId, u8 mapNum, u8 mapGroup, u8 direction);
 const struct ObjectEventGraphicsInfo *GetObjectEventGraphicsInfo(u16 graphicsId);

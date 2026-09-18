@@ -330,6 +330,11 @@ void UpdateOverworldWildEncounter(void)
     }
 
     // Spawn the Pokemon.
+    // Zero the whole template first. Only some of its fields are assigned below, and
+    // PackGraphicsId reads `script` and `trainerRange_berryTreeId` to derive the form
+    // bits of graphicsId - leaving those as stack garbage corrupts the species.
+    memset(&objectEventTemplate, 0, sizeof(objectEventTemplate));
+
     objectEventTemplate.localId = infoOWE.localId;
     objectEventTemplate.graphicsId = GetGraphicsIdForOWE(&infoOWE);
     objectEventTemplate.x = x - MAP_OFFSET;
@@ -356,6 +361,9 @@ void UpdateOverworldWildEncounter(void)
     owe = &gObjectEvents[objectEventId];
     owe->disableCoveringGroundEffects = TRUE;
     owe->shiny = infoOWE.isShiny;
+    // The sprite was created before this flag was known, so it still holds the
+    // non-shiny palette. Reload it now or a shiny spawns in normal colours.
+    ObjectEventRefreshShinyPalette(owe);
     owe->sOverworldEncounterLevel = infoOWE.noDespawn ? (infoOWE.level | OWE_NO_DESPAWN_FLAG) : infoOWE.level;
     owe->sOverworldEncounterCategory = infoOWE.category;
 
@@ -406,13 +414,26 @@ void StartWildBattleWithOWE(struct ScriptContext *ctx)
 
     localId = VarGet(ScriptReadHalfword(ctx));
     objEventId = GetObjectEventIdByLocalId(localId);
-    owe = &gObjectEvents[objEventId];
-    category = GetOWECategory(owe);
 
-    assertf(objEventId < OBJECT_EVENTS_COUNT && IsOverworldWildEncounter(owe, OWE_ANY), "cannot start overworld wild encounter")
+    // Bounds-check before dereferencing. GetObjectEventIdByLocalId returns
+    // OBJECT_EVENTS_COUNT when the object is gone, and gObjectEvents[OBJECT_EVENTS_COUNT]
+    // reads past the array into neighbouring EWRAM.
+    assertf(objEventId < OBJECT_EVENTS_COUNT, "cannot start overworld wild encounter")
     {
         UnlockPlayerFieldControls();
         UnfreezeObjectEvents();
+        ScriptContext_Enable();
+        return;
+    }
+
+    owe = &gObjectEvents[objEventId];
+    category = GetOWECategory(owe);
+
+    assertf(IsOverworldWildEncounter(owe, OWE_ANY), "cannot start overworld wild encounter")
+    {
+        UnlockPlayerFieldControls();
+        UnfreezeObjectEvents();
+        ScriptContext_Enable();
         return;
     }
 
@@ -422,6 +443,16 @@ void StartWildBattleWithOWE(struct ScriptContext *ctx)
     speciesId = OW_SPECIES(owe);
     shiny = OW_SHINY(owe) ? TRUE : FALSE;
     level = owe->sOverworldEncounterLevel & ~OWE_NO_DESPAWN_FLAG;
+
+    // Never hand an out-of-range species to CreateWildMon; it indexes gSpeciesInfo
+    // unchecked, which produces a "?????" battle rather than anything recoverable.
+    assertf(CheckValidOWESpecies(speciesId), "overworld wild encounter has invalid species")
+    {
+        UnlockPlayerFieldControls();
+        UnfreezeObjectEvents();
+        ScriptContext_Enable();
+        return;
+    }
 
     assertf(level >= MIN_LEVEL && level <= MAX_LEVEL, "overworld wild encounter does not have valid level")
     {
@@ -445,13 +476,24 @@ void SetOverworldObjectSpecies(struct ScriptContext *ctx)
 {
     u32 varId;
     u32 localId;
+    u32 objectEventId;
     struct ObjectEvent *object;
     u16 speciesId;
 
     varId = ScriptReadHalfword(ctx);
     localId = VarGet(ScriptReadHalfword(ctx));
-    object = &gObjectEvents[GetObjectEventIdByLocalId(localId)];
+    objectEventId = GetObjectEventIdByLocalId(localId);
     speciesId = SPECIES_NONE;
+
+    // GetObjectEventIdByLocalId returns OBJECT_EVENTS_COUNT when the object is gone;
+    // indexing with that reads past gObjectEvents.
+    assertf(objectEventId < OBJECT_EVENTS_COUNT, "species was not found for specified object")
+    {
+        VarSet(varId, SPECIES_NONE);
+        return;
+    }
+
+    object = &gObjectEvents[objectEventId];
 
     switch (object->graphicsId)
     {
@@ -765,7 +807,13 @@ void SetOverworldObjectSpecies(struct ScriptContext *ctx)
         break;
     }
 
-    assertf(speciesId != SPECIES_NONE, "species was not found for specified object");
+    // assertf is `if (!(cond))`, so with a trailing semicolon this checked nothing and an
+    // out-of-range species could reach the var (and from there playmoncry).
+    assertf(CheckValidOWESpecies(speciesId), "species was not found for specified object")
+    {
+        speciesId = SPECIES_NONE;
+    }
+
     VarSet(varId, speciesId);
 }
 
@@ -1108,7 +1156,13 @@ static void SetSpeciesInfoForOWE(struct InfoOWE *info, u32 x, u32 y)
 
 static u32 GetGraphicsIdForOWE(const struct InfoOWE *info)
 {
-    assertf(CheckValidOWESpecies(info->speciesId), "invalid generated overworld encounter");
+    // assertf is `if (!(cond))`, so writing it with a trailing semicolon compiled to
+    // `if (!cond);` and checked nothing. It needs a real failure block.
+    assertf(CheckValidOWESpecies(info->speciesId), "invalid generated overworld encounter")
+    {
+        return OBJ_EVENT_GFX_MON_BASE;
+    }
+
     return OBJ_EVENT_GFX_MON_BASE + info->speciesId;
 }
 
@@ -1135,14 +1189,11 @@ static bool32 CheckCanLoadOWE_Palette(u16 speciesId, bool32 isFemale, bool32 isS
     // That is the tag to check for here.
     u32 tag = speciesId + SPECIES_OVERWORLD_TAG;
 
-    // A shiny then reloads the shiny palette on its first graphics refresh, so it can
-    // end up holding two slots. Reserve the second one up front.
-    if (isShiny && IndexOfSpritePaletteTag(speciesId + SPECIES_OVERWORLD_SHINY_TAG) == 0xFF)
-    {
-        if (numFreePalSlots == 0)
-            return FALSE;
-        numFreePalSlots--;
-    }
+    // Deliberately no extra reservation for shinies. Failing this check discards the
+    // encounter outright, so charging a shiny an extra slot silently filtered shinies out
+    // on routes with palette pressure. A shiny that cannot fit its own palette now falls
+    // back to rendering in normal colours (LoadSpeciesPaletteWithFallback) and still holds
+    // only one slot, so it costs no more than any other encounter.
 
     if (numFreePalSlots == 1)
     {
@@ -2112,6 +2163,7 @@ bool32 TrySpawnFishingOWE(u8 rod, s16 x, s16 y)
     owe = &gObjectEvents[objectEventId];
     owe->disableCoveringGroundEffects = TRUE;
     owe->shiny = isShiny;
+    ObjectEventRefreshShinyPalette(owe);
     owe->sOverworldEncounterLevel = level;
     owe->sOverworldEncounterCategory = OWE_CATEGORY_WILD;
 
@@ -2172,6 +2224,7 @@ bool32 TrySpawnRockSmashOWE(s16 x, s16 y)
     owe = &gObjectEvents[objectEventId];
     owe->disableCoveringGroundEffects = TRUE;
     owe->shiny = isShiny;
+    ObjectEventRefreshShinyPalette(owe);
     owe->sOverworldEncounterLevel = level;
     owe->sOverworldEncounterCategory = OWE_CATEGORY_WILD;
 

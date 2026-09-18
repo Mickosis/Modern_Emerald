@@ -138,15 +138,15 @@ static const union AnimCmd sBallAnimSeq0[] =
 
 static const union AnimCmd sBallAnimSeq1[] =
 {
-    ANIMCMD_FRAME(4, B_SENDOUT_BALL_OPEN_FRAMES),
-    ANIMCMD_FRAME(8, B_SENDOUT_BALL_OPEN_FRAMES),
+    ANIMCMD_FRAME(4, 5),
+    ANIMCMD_FRAME(8, 5),
     ANIMCMD_END,
 };
 
 static const union AnimCmd sBallAnimSeq2[] =
 {
-    ANIMCMD_FRAME(4, B_SENDOUT_BALL_OPEN_FRAMES),
-    ANIMCMD_FRAME(0, B_SENDOUT_BALL_OPEN_FRAMES),
+    ANIMCMD_FRAME(4, 5),
+    ANIMCMD_FRAME(0, 5),
     ANIMCMD_END,
 };
 
@@ -755,7 +755,7 @@ static void SpriteCB_ReleaseMonFromBall(struct Sprite *sprite)
     StartSpriteAnim(sprite, 1);
     ballId = ItemIdToBallId(GetBattlerPokeballItemId(battlerId));
     AnimateBallOpenParticles(sprite->x, sprite->y - 5, 1, 28, ballId);
-    sprite->data[0] = LaunchBallFadeMonTask(TRUE, sprite->sBattler, B_SENDOUT_BALL_FADE_FRAMES, ballId);
+    sprite->data[0] = LaunchBallFadeMonTask(TRUE, sprite->sBattler, 14, ballId);
     sprite->callback = HandleBallAnimEnd;
 
     if (gMain.inBattle)
@@ -857,7 +857,7 @@ static void HandleBallAnimEnd(struct Sprite *sprite)
     }
     else
     {
-        gSprites[gBattlerSpriteIds[battlerId]].data[1] -= B_EMERGE_HOP_STEP;
+        gSprites[gBattlerSpriteIds[battlerId]].data[1] -= 288;
         gSprites[gBattlerSpriteIds[battlerId]].y2 = gSprites[gBattlerSpriteIds[battlerId]].data[1] >> 8;
     }
     if (sprite->animEnded && affineAnimEnded)
@@ -910,7 +910,7 @@ static void SpriteCB_BallThrow_CaptureMon(struct Sprite *sprite)
 
 static void SpriteCB_PlayerMonSendOut_1(struct Sprite *sprite)
 {
-    sprite->data[0] = B_SENDOUT_PLAYER_ARC_FRAMES;
+    sprite->data[0] = 25;
     sprite->data[2] = GetBattlerSpriteCoord(sprite->sBattler, BATTLER_COORD_X_2);
     sprite->data[4] = GetBattlerSpriteCoord(sprite->sBattler, BATTLER_COORD_Y_PIC_OFFSET) + 24;
     sprite->data[5] = -30;
@@ -981,7 +981,7 @@ static void SpriteCB_PlayerMonSendOut_2(struct Sprite *sprite)
 
 static void SpriteCB_ReleaseMon2FromBall(struct Sprite *sprite)
 {
-    if (sprite->data[0]++ > B_SENDOUT_DOUBLES_STAGGER)
+    if (sprite->data[0]++ > 24)
     {
         sprite->data[0] = 0;
         sprite->callback = SpriteCB_ReleaseMonFromBall;
@@ -991,7 +991,7 @@ static void SpriteCB_ReleaseMon2FromBall(struct Sprite *sprite)
 static void SpriteCB_OpponentMonSendOut(struct Sprite *sprite)
 {
     sprite->data[0]++;
-    if (sprite->data[0] > B_SENDOUT_OPPONENT_HOLD)
+    if (sprite->data[0] > 15)
     {
         sprite->data[0] = 0;
         if (IsDoubleBattle() && gBattleSpritesDataPtr->animationData->introAnimActive
@@ -1238,7 +1238,7 @@ void StartHealthboxSlideIn(u8 battlerId)
 {
     struct Sprite *healthboxSprite = &gSprites[gHealthboxSpriteIds[battlerId]];
 
-    healthboxSprite->sSpeedX = B_HEALTHBOX_SLIDE_SPEED;
+    healthboxSprite->sSpeedX = 5;
     healthboxSprite->sSpeedY = 0;
     healthboxSprite->x2 = 0x73;
     healthboxSprite->y2 = 0;
@@ -1258,7 +1258,7 @@ void StartHealthboxSlideIn(u8 battlerId)
 static void SpriteCB_HealthboxSlideInDelayed(struct Sprite *sprite)
 {
     sprite->sDelayTimer++;
-    if (sprite->sDelayTimer == B_HEALTHBOX_SLIDE_DELAY)
+    if (sprite->sDelayTimer == 20)
     {
         sprite->sDelayTimer = 0;
         sprite->callback = SpriteCB_HealthboxSlideIn;
@@ -1269,12 +1269,6 @@ static void SpriteCB_HealthboxSlideIn(struct Sprite *sprite)
 {
     sprite->x2 -= sprite->sSpeedX;
     sprite->y2 -= sprite->sSpeedY;
-    // Clamp instead of requiring an exact landing, so the slide speed can be any
-    // value rather than only a divisor of the 0x73 start offset.
-    if ((sprite->sSpeedX > 0 && sprite->x2 < 0) || (sprite->sSpeedX < 0 && sprite->x2 > 0))
-        sprite->x2 = 0;
-    if ((sprite->sSpeedY > 0 && sprite->y2 < 0) || (sprite->sSpeedY < 0 && sprite->y2 > 0))
-        sprite->y2 = 0;
     if (sprite->x2 == 0 && sprite->y2 == 0)
         sprite->callback = SpriteCallbackDummy;
 }

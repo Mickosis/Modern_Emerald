@@ -1466,7 +1466,7 @@ static void SpriteCB_Ball_Release_Step(struct Sprite *sprite)
     {
     case 0 ... POKEBALL_COUNT - 1:
         AnimateBallOpenParticles(sprite->x, sprite->y - 5, 1, 28, ballId);
-        LaunchBallFadeMonTask(TRUE, gBattleAnimTarget, B_SENDOUT_BALL_FADE_FRAMES, ballId);
+        LaunchBallFadeMonTask(TRUE, gBattleAnimTarget, 14, ballId);
         break;
     }
 
@@ -1491,7 +1491,7 @@ static void SpriteCB_Ball_Release_Wait(struct Sprite *sprite)
     }
     else
     {
-        gSprites[gBattlerSpriteIds[gBattleAnimTarget]].sOffsetY -= B_EMERGE_HOP_STEP;
+        gSprites[gBattlerSpriteIds[gBattleAnimTarget]].sOffsetY -= 288;
         gSprites[gBattlerSpriteIds[gBattleAnimTarget]].y2 = gSprites[gBattlerSpriteIds[gBattleAnimTarget]].sOffsetY >> 8;
     }
 
