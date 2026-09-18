@@ -125,12 +125,7 @@
 #define ABILITY_HIDDEN 2
 
 // Shiny odds
-// TEMPORARY DEBUG VALUE - DO NOT SHIP.
-// Raised to roughly 1/12 so overworld encounter shininess can be tested without
-// grinding. Restore to 8 (1/8192) before release; this affects every shiny roll
-// in the game, not just overworld encounters.
-#define SHINY_ODDS 5461 // Actual probability is SHINY_ODDS/65536
-// #define SHINY_ODDS 8 // Actual probability is SHINY_ODDS/65536
+#define SHINY_ODDS 8 // Actual probability is SHINY_ODDS/65536
 
 // Ribbon IDs used by TV and Pokénav
 #define CHAMPION_RIBBON       0
