@@ -161,7 +161,12 @@ static void LoadObjectRegularReflectionPalette(struct ObjectEvent *objectEvent, 
     u16 baseTag = GetSpritePaletteTagByPaletteNum(mainSprite->oam.paletteNum);
     u16 paletteTag = REFLECTION_PAL_TAG(baseTag, mainSprite->oam.paletteNum);
     u8 paletteNum = IndexOfSpritePaletteTag(paletteTag);
-    if (paletteNum <= 16) { // Load filtered palette
+    // IndexOfSpritePaletteTag returns 0xFF when the tag is not loaded, so the test must be
+    // ">= 16" to mean "not loaded yet, build it". As "<= 16" this only rebuilt palettes that
+    // were already resident and skipped the load when one was actually needed, leaving 0xFF
+    // to truncate into the 4-bit oam.paletteNum field as palette 15.
+    // UpdateObjectReflectionSprite below already uses the correct test.
+    if (paletteNum >= 16) { // Load filtered palette
         u16 filteredData[16];
         struct SpritePalette filteredPal = {.tag = paletteTag, .data = filteredData};
         if (sprite->sIsStillReflection == FALSE)
@@ -169,9 +174,13 @@ static void LoadObjectRegularReflectionPalette(struct ObjectEvent *objectEvent, 
         else
             ApplyIceFilter(mainSprite->oam.paletteNum, filteredData);
         paletteNum = LoadSpritePalette(&filteredPal);
-        UpdateSpritePaletteWithWeather(paletteNum);
+        if (paletteNum < 16)
+            UpdateSpritePaletteWithWeather(paletteNum);
     }
-    sprite->oam.paletteNum = paletteNum;
+    // Still 0xFF means no palette slot was free; keep whatever the sprite already has
+    // rather than truncating the sentinel into the palette field.
+    if (paletteNum < 16)
+        sprite->oam.paletteNum = paletteNum;
     sprite->oam.objMode = ST_OAM_OBJ_BLEND;
 }
 
@@ -181,9 +190,17 @@ static void LoadObjectHighBridgeReflectionPalette(struct ObjectEvent *objectEven
 {
     u16 blueData[16];
     struct SpritePalette bluePalette = {.tag = HIGH_BRIDGE_PAL_TAG, .data = blueData};
+    u8 paletteNum;
+
     CpuFill16(0x55C9, blueData, PLTT_SIZE_4BPP);
-    sprite->oam.paletteNum = LoadSpritePalette(&bluePalette);
-    UpdateSpritePaletteWithWeather(sprite->oam.paletteNum);
+    paletteNum = LoadSpritePalette(&bluePalette);
+    // 0xFF means no palette slot was free; keep the current one rather than truncating the
+    // sentinel into the 4-bit palette field.
+    if (paletteNum < 16)
+    {
+        sprite->oam.paletteNum = paletteNum;
+        UpdateSpritePaletteWithWeather(paletteNum);
+    }
 }
 
 static void UpdateObjectReflectionSprite(struct Sprite *reflectionSprite)
@@ -217,9 +234,13 @@ static void UpdateObjectReflectionSprite(struct Sprite *reflectionSprite)
                 ApplyIceFilter(mainSprite->oam.paletteNum, filteredData);
             }
             paletteNum = LoadSpritePalette(&filteredPal);
-            UpdateSpritePaletteWithWeather(paletteNum);
+            if (paletteNum < 16)
+                UpdateSpritePaletteWithWeather(paletteNum);
         }
-        reflectionSprite->oam.paletteNum = paletteNum;
+        // 0xFF means no palette slot was free; keep the current one instead of truncating
+        // the sentinel into the 4-bit palette field.
+        if (paletteNum < 16)
+            reflectionSprite->oam.paletteNum = paletteNum;
     }
 
     reflectionSprite->oam.shape = mainSprite->oam.shape;
