@@ -356,6 +356,9 @@ void UpdateOverworldWildEncounter(void)
     owe = &gObjectEvents[objectEventId];
     owe->disableCoveringGroundEffects = TRUE;
     owe->shiny = infoOWE.isShiny;
+    // The sprite was created before this flag was known, so it still holds the
+    // non-shiny palette. Reload it now or a shiny spawns in normal colours.
+    ObjectEventRefreshShinyPalette(owe);
     owe->sOverworldEncounterLevel = infoOWE.noDespawn ? (infoOWE.level | OWE_NO_DESPAWN_FLAG) : infoOWE.level;
     owe->sOverworldEncounterCategory = infoOWE.category;
 
@@ -2112,6 +2115,7 @@ bool32 TrySpawnFishingOWE(u8 rod, s16 x, s16 y)
     owe = &gObjectEvents[objectEventId];
     owe->disableCoveringGroundEffects = TRUE;
     owe->shiny = isShiny;
+    ObjectEventRefreshShinyPalette(owe);
     owe->sOverworldEncounterLevel = level;
     owe->sOverworldEncounterCategory = OWE_CATEGORY_WILD;
 
@@ -2172,6 +2176,7 @@ bool32 TrySpawnRockSmashOWE(s16 x, s16 y)
     owe = &gObjectEvents[objectEventId];
     owe->disableCoveringGroundEffects = TRUE;
     owe->shiny = isShiny;
+    ObjectEventRefreshShinyPalette(owe);
     owe->sOverworldEncounterLevel = level;
     owe->sOverworldEncounterCategory = OWE_CATEGORY_WILD;
 

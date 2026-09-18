@@ -2110,6 +2110,32 @@ static void RefreshFollowerGraphics(struct ObjectEvent *objEvent) {
     }
 }
 
+// Reload an object event's species palette to match its current shiny flag.
+// The sprite is created by SpawnSpecialObjectEvent before the spawner can set
+// objectEvent->shiny, so anything that decides shininess after the spawn (such
+// as an overworld wild encounter) must call this or it keeps the non-shiny
+// palette it was created with.
+void ObjectEventRefreshShinyPalette(struct ObjectEvent *objectEvent)
+{
+    const struct ObjectEventGraphicsInfo *graphicsInfo;
+    struct Sprite *sprite;
+
+    if (!objectEvent->active || objectEvent->spriteId >= MAX_SPRITES)
+        return;
+
+    graphicsInfo = GetObjectEventGraphicsInfo(objectEvent->graphicsId);
+    if (graphicsInfo->paletteTag != OBJ_EVENT_PAL_TAG_DYNAMIC)
+        return;
+
+    // Free the old palette before loading the new one so that a mon needing a
+    // different palette than it spawned with does not hold two slots at once.
+    sprite = &gSprites[objectEvent->spriteId];
+    sprite->inUse = FALSE;
+    FieldEffectFreePaletteIfUnused(sprite->oam.paletteNum);
+    sprite->inUse = TRUE;
+    sprite->oam.paletteNum = LoadDynamicFollowerPalette(OW_SPECIES(objectEvent), OW_FORM(objectEvent), objectEvent->shiny);
+}
+
 // Like CastformDataTypeChange, but for overworld weather
 static u8 GetOverworldCastformForm(void) {
     switch (GetCurrentWeather())
