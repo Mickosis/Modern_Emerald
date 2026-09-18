@@ -992,6 +992,25 @@ static bool32 CheckCurrentWildMonHeaderForOWE(bool32 shouldSpawnWaterMons)
     return gWildMonHeaders[headerId].landMonsInfo != NULL;
 }
 
+// An encounter the player is currently interacting with must never be despawned out from
+// under the running script. LoadSpritePalette calls RemoveOldestGeneratedOWE re-entrantly
+// when it runs out of palette slots, and forceRemove ignores the no-despawn flag, so
+// without this the emote or follower recall in the middle of the encounter script could
+// delete the very mon being talked to. RemoveObjectEvent then zeroes graphicsId, which
+// reaches CreateWildMon as an out-of-range species.
+static bool32 IsOWEInteractionLocked(struct ObjectEvent *owe)
+{
+    if (sBattleOWEObjectEventId < OBJECT_EVENTS_COUNT && owe == &gObjectEvents[sBattleOWEObjectEventId])
+        return TRUE;
+
+    // Only while a script actually holds the player. gSpecialVar_LastTalked keeps its value
+    // after the encounter ends and must not pin the slot permanently.
+    if (ArePlayerFieldControlsLocked() && owe->localId == gSpecialVar_LastTalked)
+        return TRUE;
+
+    return FALSE;
+}
+
 static u32 GetOldestActiveOWESlot(bool32 forceRemove)
 {
     struct ObjectEvent *slotMon, *oldest = NULL;
@@ -1006,7 +1025,8 @@ static u32 GetOldestActiveOWESlot(bool32 forceRemove)
             continue;
 
         slotMon = &gObjectEvents[objEventId];
-        if (IsOverworldWildEncounter(slotMon, OWE_GENERATED) && OW_SPECIES(slotMon) != SPECIES_NONE && (!HasOWENoDespawnFlag(slotMon) || forceRemove == TRUE))
+        if (IsOverworldWildEncounter(slotMon, OWE_GENERATED) && OW_SPECIES(slotMon) != SPECIES_NONE && (!HasOWENoDespawnFlag(slotMon) || forceRemove == TRUE)
+         && !IsOWEInteractionLocked(slotMon))
         {
             oldest = slotMon;
             break;
@@ -1023,7 +1043,8 @@ static u32 GetOldestActiveOWESlot(bool32 forceRemove)
             continue;
 
         slotMon = &gObjectEvents[objEventId];
-        if (IsOverworldWildEncounter(slotMon, OWE_GENERATED) && OW_SPECIES(slotMon) != SPECIES_NONE && (!HasOWENoDespawnFlag(slotMon) || forceRemove == TRUE))
+        if (IsOverworldWildEncounter(slotMon, OWE_GENERATED) && OW_SPECIES(slotMon) != SPECIES_NONE && (!HasOWENoDespawnFlag(slotMon) || forceRemove == TRUE)
+         && !IsOWEInteractionLocked(slotMon))
         {
             if (slotMon->sOverworldEncounterAge > oldest->sOverworldEncounterAge)
                 oldest = slotMon;

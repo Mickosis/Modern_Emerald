@@ -1686,7 +1686,11 @@ u8 LoadSpritePalette(const struct SpritePalette *palette)
 
             for (; count > 0; count--)
             {
-                RemoveOldestGeneratedOWE();
+                // Stop once there is nothing left that may be despawned, rather than
+                // spinning through the remaining count doing nothing.
+                if (RemoveOldestGeneratedOWE() >= OBJECT_EVENTS_COUNT)
+                    break;
+
                 index = IndexOfSpritePaletteTag(TAG_NONE);
                 if (index != 0xFF)
                     break;
