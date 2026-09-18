@@ -1189,14 +1189,11 @@ static bool32 CheckCanLoadOWE_Palette(u16 speciesId, bool32 isFemale, bool32 isS
     // That is the tag to check for here.
     u32 tag = speciesId + SPECIES_OVERWORLD_TAG;
 
-    // A shiny then reloads the shiny palette on its first graphics refresh, so it can
-    // end up holding two slots. Reserve the second one up front.
-    if (isShiny && IndexOfSpritePaletteTag(speciesId + SPECIES_OVERWORLD_SHINY_TAG) == 0xFF)
-    {
-        if (numFreePalSlots == 0)
-            return FALSE;
-        numFreePalSlots--;
-    }
+    // Deliberately no extra reservation for shinies. Failing this check discards the
+    // encounter outright, so charging a shiny an extra slot silently filtered shinies out
+    // on routes with palette pressure. A shiny that cannot fit its own palette now falls
+    // back to rendering in normal colours (LoadSpeciesPaletteWithFallback) and still holds
+    // only one slot, so it costs no more than any other encounter.
 
     if (numFreePalSlots == 1)
     {
